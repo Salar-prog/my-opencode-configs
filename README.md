@@ -64,21 +64,39 @@ opencode
 
 ## 🤖 For AI Agents — One-Prompt Setup
 
-Paste this prompt into any agent to fully bootstrap OpenCode on a new machine end-to-end. The agent clones the repo, reads `agents/bootstrap-new-machine.md`, follows every step, and handles everything except manual interactive steps (OAuth sign-in, optional rea setup):
+Paste this prompt into any agent to fully bootstrap OpenCode on a new machine. The prompt includes the clone step itself, so no separate repo cloning is needed beforehand:
 
 ```
-I've cloned this repo to ~/dotfiles. Read `agents/bootstrap-new-machine.md` and execute every step exactly in order. After each step, verify it worked before continuing. If something fails, report the error and ask how to fix it — don't skip ahead. For the GitHub OAuth step (Step 5), output the exact manual instructions and wait for human confirmation before proceeding. For any optional tools (like rea), output install commands and wait for human confirmation. At the end, run the verification checklist (Step 7) and report a summary of successes, failures, and remaining manual steps needed. Do not skip any steps.
+Clone https://github.com/Salar-prog/my-opencode-configs.git to ~/dotfiles.
+Then read agents/bootstrap-new-machine.md and execute every step exactly in order, verifying after each.
+If something fails, report the error and ask how to fix it — don't skip ahead.
+For GitHub OAuth (Step 5), output exact manual instructions and wait for human confirmation.
+For any optional tools (like rea), output install commands and wait for human confirmation.
+At the end, run the verification checklist (Step 7) and report a summary of successes, failures, and remaining manual steps. Do not skip any steps.
 ```
 
-Then run this script to automate the non-interactive parts (clone, symlink, service restart, LSP installs). After running it, you'll still need to complete the GitHub OAuth manually and optionally install rea:
+No other files or commands are needed beyond what's already in the cloned repo.
+
+---
+
+## ⚡ Quick Script Bootstrap (No Agent Needed)
+
+If you don't want an AI agent doing the setup for you, run this one command after cloning the repo. It handles everything except interactive manual steps (GitHub OAuth, optional rea):
 
 ```bash
-./scripts/bootstrap.sh
+git clone https://github.com/Salar-prog/my-opencode-configs.git ~/dotfiles && cd ~/dotfiles && ./scripts/bootstrap.sh
 ```
 
-This leaves you two manual actions:
-1. **GitHub OAuth** — inside `opencode` TUI, press Ctrl+P → /mcps → select github → Sign in
-2. **rea setup** (optional) — install `rea` then run `rea mcp`, or add the config block below to `~/.config/opencode/opencode.jsonc`:
+Or if you have the file already downloaded, just run the script directly. Or use curl to fetch it without cloning first:
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/Salar-prog/my-opencode-configs/main/scripts/bootstrap.sh | sh -
+```
+
+The script outputs a full summary at the end showing what succeeded, what failed, and which manual steps remain. You'll always need to do two things after running it:
+
+1. **GitHub OAuth** — run `opencode`, then inside the TUI: Ctrl+P → /mcps → github → Sign in
+2. **Optional rea** — install rea binary, run `rea mcp`, or add the config block to `~/.config/opencode/opencode.jsonc`:
 
 ```jsonc
 "rea": {

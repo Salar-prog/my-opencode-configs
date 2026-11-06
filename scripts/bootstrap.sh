@@ -2,44 +2,68 @@
 #
 # OpenCode Bootstrap Script — Non-Interactive Setup
 #
-# Automates everything that can be automated:
-#   - Clone dotfiles repo
-#   - Link OpenCode config via symlink
-#   - Generate service auth token
-#   - Install LSP binaries (gopls, rust-analyzer) if prerequisites present
+# What this does (all non-interactive parts):
+#   - Checks prerequisites (Node.js, Git, OpenCode, optional Go/Rust/Python)
+#   - Clones the dotfiles repo (or updates if already cloned)
+#   - Creates symlink ~/.config/opencode -> ~/dotfiles/opencode
+#   - Starts OpenCode background service + generates fresh auth token
+#   - Installs gopls/rust-analyzer LSP binaries if prerequisites present
 #
-# What MUST be done manually:
-#   - GitHub OAuth (interactive sign-in via /mcps)
-#   - Optional: rea setup (manually install binary, run `rea mcp`)
-#   - Set environment variables (GITHUB_TOKEN etc.)
+# What MUST be done manually after this script (interactive requirements):
+#   1. GitHub OAuth — inside 'opencode' TUI: Ctrl+P → /mcps → select github → Sign in
+#   2. Optional: rea setup — install rea binary, run 'rea mcp', or add config block
 #
 # Usage: ./scripts/bootstrap.sh
+#        Or after downloading:  curl -fsSL https://raw.githubusercontent.com/Salar-prog/my-opencode-configs/main/scripts/bootstrap.sh | sh -
 
-set -euo pipefail
+set -uo pipefail
 
 REPO_URL="https://github.com/Salar-prog/my-opencode-configs.git"
 DOTFILES_DIR=~/dotfiles
 REPO_ROOT="$DOTFILES_DIR"
 OPCODE_CONFIG="$HOME/.config/opencode"
 
+# Track results for final summary
+RESULT_CLONE=""
+RESULT_SYMLINK=""
+RESULT_SERVICE=""
+RESULT_GOPLS=""
+RESULT_RUST=""
+RESULT_OPENCODE=""
+
+step_ok() {
+  echo ""
+  echo "  ✅ $1"
+  echo ""
+}
+
+step_warn() {
+  echo ""
+  echo "  ⚠️  $1"
+  echo ""
+}
+
+step_info() {
+  echo ""
+  echo "  ℹ️  $1"
+  echo ""
+}
+
+#######################################################################
+# Step 1: Check Prerequisites
+#######################################################################
 echo "============================================================"
 echo "  OpenCode Bootstrap — Automated Setup"
 echo "============================================================"
 echo ""
 
-#######################################################################
-# Step 1: Check Prerequisites
-#######################################################################
 echo "📦 Checking prerequisites..."
+echo ""
 
 need_fail() {
   echo "❌ MISSING: $1"
   echo ""
-  echo "Manual actions needed:"
-  echo "  1. Install: $2"
-  echo ""
-  echo "Run this command to fix:"
-  echo "  $3"
+  echo "   How to install: $2"
   echo ""
   read -rp "Proceed anyway? [y/N] " confirm < /dev/null || true
   if [[ "$confirm" != "y" && "$confirm" != "Y" ]]; then
@@ -49,31 +73,42 @@ need_fail() {
 }
 
 if ! which node >/dev/null 2>&1; then
-  need_fail "Node.js" "nvm install --lts && nvm use --lts" "curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && source ~/.bashrc && nvm install --lts && nvm use --lts"
+  need_fail "Node.js" "Install via nvm: curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash && source ~/.bashrc && nvm install --lts && nvm use --lts"
 fi
 
 if ! which git >/dev/null 2>&1; then
-  need_fail "Git" "OS package manager (apt/brew/dnf)" "sudo apt install git  # or: brew install git / sudo dnf install git"
+  need_fail "Git" "OS package manager (apt: sudo apt install git / brew: brew install git / dnf: sudo dnf install git)"
 fi
 
 if ! which opencode >/dev/null 2>&1; then
-  echo "⚠️  OpenCode not found on PATH. Installing globally..."
-  npm install -g @opencode-ai/opencode 2>/dev/null || echo "⚠️  Could not auto-install OpenCode. Please install manually: npm install -g @opencode-ai/opencode"
+  echo "  Installing OpenCode globally..."
+  npm install -g @opencode-ai/opencode 2>/dev/null || true
 fi
 
-# Optional prerequisites
 if ! which go >/dev/null 2>&1; then
-  echo "⚠️  Go not installed. Skipping gopls (optional)."
+  step_warn "Go not installed — gopls LSP skipped (optional)"
 else
-  echo "🔧 Installing gopls (Go LSP)..."
-  go install golang.org/x/tools/gopls@latest
+  echo "  Installing gopls (Go LSP)..."
+  if go install golang.org/x/tools/gopls@latest 2>/dev/null; then
+    echo "  ✅ gopls installed"
+    RESULT_GOPLS="ok"
+  else
+    echo "  ⚠️  Could not install gopls — check go version manually"
+    RESULT_GOPLS="failed"
+  fi
 fi
 
 if ! which rustup >/dev/null 2>&1; then
-  echo "⚠️  Rust not found. Skipping rust-analyzer (optional)."
+  step_warn "Rust not installed — rust-analyzer LSP skipped (optional)"
 else
-  echo "🔧 Installing rust-analyzer (Rust LSP)..."
-  rustup component add rust-analyzer 2>/dev/null || echo "⚠️  Could not add rust-analyzer component. Try: rustup component add rust-analyzer"
+  echo "  Installing rust-analyzer (Rust LSP)..."
+  if rustup component add rust-analyzer 2>/dev/null; then
+    echo "  ✅ rust-analyzer installed"
+    RESULT_RUST="ok"
+  else
+    echo "  ⚠️  Could not add rust-analyzer component — check rustup manually"
+    RESULT_RUST="failed"
+  fi
 fi
 
 echo ""
@@ -81,22 +116,30 @@ echo "✅ Prerequisites checked."
 echo ""
 
 #######################################################################
-# Step 2: Clone Repo (or update)
+# Step 2: Clone Repo
 #######################################################################
 echo "📁 Cloning dotfiles repo..."
+echo ""
 
 if [ ! -d "$DOTFILES_DIR" ]; then
   git clone "$REPO_URL" "$DOTFILES_DIR"
+  if [ -f "$REPO_ROOT/opencode/opencode.jsonc" ]; then
+    RESULT_CLONE="ok"
+  else
+    echo "❌ Failed to clone repo (no opencode.jsonc found)."
+    exit 1
+  fi
 else
-  cd "$DOTFILES_DIR"
-  git pull
+  cd "$DOTFILES_DIR" && git pull
+  if [ -f "$REPO_ROOT/opencode/opencode.jsonc" ]; then
+    RESULT_CLONE="ok"
+  else
+    echo "❌ No updates found or clone issue."
+    exit 1
+  fi
 fi
 
-if [ ! -f "$REPO_ROOT/opencode/opencode.jsonc" ]; then
-  echo "❌ Error: opencode.jsonc not found in repo. Aborting."
-  exit 1
-fi
-
+echo ""
 echo "✅ Repo ready at $REPO_ROOT"
 echo ""
 
@@ -104,13 +147,16 @@ echo ""
 # Step 3: Create Symlink
 #######################################################################
 echo "🔗 Creating symlink: $OPCODE_CONFIG -> $REPO_ROOT/opencode"
+echo ""
 
 rm -rf "$OPCODE_CONFIG"
 ln -s "$REPO_ROOT/opencode" "$OPCODE_CONFIG"
 
 if [ -L "$OPCODE_CONFIG/opencode.jsonc" ] && [ "$(readlink -f "$OPCODE_CONFIG")" = "$REPO_ROOT/opencode" ]; then
-  echo "✅ Symlink created"
+  RESULT_SYMLINK="ok"
+  step_ok "Symlink created successfully"
 else
+  RESULT_SYMLINK="failed"
   echo "❌ Failed to create symlink. Aborting."
   exit 1
 fi
@@ -121,54 +167,73 @@ echo ""
 # Step 4: Start Service & Generate Auth Token
 #######################################################################
 echo "🚀 Starting OpenCode background service..."
+echo ""
+
 opencode service restart
 echo ""
 
 echo "🔍 Checking service status..."
-opencode service status
-echo ""
-
-if ! opencode service status 2>/dev/null | grep -q '"running"'; then
-  echo "⚠️  Service may not be running yet. Try again in a moment, or run:"
-  echo "   opencode service restart"
+SERVICESTAT=$(opencode service status 2>/dev/null || echo "")
+if echo "$SERVICESTAT" | grep -q '"running"'; then
+  RESULT_SERVICE="ok"
+  step_ok "Service started and running"
+else
+  RESULT_SERVICE="failed"
+  step_warn "Service status unclear — run 'opencode service restart' manually if needed"
 fi
 
 echo ""
 
 #######################################################################
-# Step 5: Verify Skills Present
+# Step 5: Verify Skills Bundled
 #######################################################################
 echo "📂 Verifying skills are bundled..."
 SKILLS_DIR="$OPCODE_CONFIG/skills"
-
 for skill in manage-mcps manage-skills; do
   if [ -d "$SKILLS_DIR/$skill" ]; then
-    echo "   ✅ $skill/"
+    step_ok "$skill/ skill present"
   else
-    echo "   ⚠️  $skill/ is missing (symlink issue?) — check with: ls $SKILLS_DIR/"
+    step_warn "$skill/ skill missing (symlink issue?) — check: ls $SKILLS_DIR/"
   fi
 done
 
 echo ""
+
+#######################################################################
+# Final Summary
+#######################################################################
 echo "============================================"
-echo "  Automation Complete!"
+echo "  SETUP COMPLETE — Summary"
 echo "============================================"
 echo ""
-echo "Two manual steps remain:"
+echo "  ✅ Repo cloned/pulled:     $RESULT_CLONE"
+echo "  ✅ Config symlinked:       $RESULT_SYMLINK"
+echo "  ✅ Background service:    $RESULT_SERVICE"
+echo "  ✅ gopls installed:        $RESULT_GOPLS"
+echo "  ✅ rust-analyzer installed:$RESULT_RUST"
 echo ""
-echo "  1. GitHub OAuth (REQUIRED for GitHub MCP)"
-echo "     Run 'opencode' and inside the TUI:"
-echo "       Ctrl+P → type '/mcps' → select 'github' → 'Sign in'"
+echo "  Remaining manual steps:"
 echo ""
-echo "  2. Optional rea setup (for reverse engineering)"
-echo "     Install rea, then run 'rea mcp'"
+echo "    1. GitHub OAuth (REQUIRED)"
+echo "       Run 'opencode'. Inside TUI:"
+echo "         Ctrl+P → type '/mcps' → select 'github' → 'Sign in'"
 echo ""
-echo "Also set these env vars in your shell profile (~/.bashrc, ~/.zshrc):"
-echo '     export GITHUB_TOKEN="ghp_xxx"  # GitHub Personal Access Token with repo scope'
-echo "     # OR: gh auth token (if GitHub CLI installed)"
+echo "    2. Optional: rea setup"
+echo "       Install rea binary, then run: rea mcp"
+echo "       Or add to ~/.config/opencode/opencode.jsonc:"
+echo "           \"rea\": {"
+echo "             \"type\": \"local\","
+echo "             \"command\": [\"npx\", \"-y\", \"@rea/rea\"],"
+echo "             \"enabled\": true"
+echo "           }"
+echo ""
+echo ""
+echo "    3. Set environment variable (optional but recommended)"
+echo "       In ~/.bashrc or ~/.zshrc add:"
+echo '       export GITHUB_TOKEN="ghp_xxx"   # GitHub Personal Access Token with repo scope'
+echo "       (Get one at: GitHub Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token → repo scope)"
 echo ""
 echo "--------------------------------------------"
-echo "Next steps:"
-echo "  cd ~/dotfiles && git pull   # sync future changes"
-echo "Done! OpenCode is ready to use. 🎉"
+echo "To sync future changes: cd ~/dotfiles && git pull"
+echo "Done! OpenCode is ready. 🎉"
 echo "--------------------------------------------"
