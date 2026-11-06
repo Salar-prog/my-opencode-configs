@@ -62,6 +62,34 @@ opencode
 
 ---
 
+## 🤖 For AI Agents — One-Prompt Setup
+
+Paste this prompt into any agent to fully bootstrap OpenCode on a new machine end-to-end. The agent clones the repo, reads `agents/bootstrap-new-machine.md`, follows every step, and handles everything except manual interactive steps (OAuth sign-in, optional rea setup):
+
+```
+I've cloned this repo to ~/dotfiles. Read `agents/bootstrap-new-machine.md` and execute every step exactly in order. After each step, verify it worked before continuing. If something fails, report the error and ask how to fix it — don't skip ahead. For the GitHub OAuth step (Step 5), output the exact manual instructions and wait for human confirmation before proceeding. For any optional tools (like rea), output install commands and wait for human confirmation. At the end, run the verification checklist (Step 7) and report a summary of successes, failures, and remaining manual steps needed. Do not skip any steps.
+```
+
+Then run this script to automate the non-interactive parts (clone, symlink, service restart, LSP installs). After running it, you'll still need to complete the GitHub OAuth manually and optionally install rea:
+
+```bash
+./scripts/bootstrap.sh
+```
+
+This leaves you two manual actions:
+1. **GitHub OAuth** — inside `opencode` TUI, press Ctrl+P → /mcps → select github → Sign in
+2. **rea setup** (optional) — install `rea` then run `rea mcp`, or add the config block below to `~/.config/opencode/opencode.jsonc`:
+
+```jsonc
+"rea": {
+  "type": "local",
+  "command": ["npx", "-y", "@rea/rea"],
+  "enabled": true
+}
+```
+
+---
+
 ## 📋 Detailed Step-by-Step Walkthrough
 
 ### Step 1: Install Prerequisites
@@ -396,13 +424,17 @@ dotfiles/
 │   ├── opencode.jsonc          # Global server config (main file)
 │   ├── cli.json                # CLI/TUI preferences
 │   ├── skills/
-│   │   ├── manage-mcps/
-│   │   │   └── SKILL.md        # Skill: browse/install MCP servers from mcpservers.org
-│   │   └── manage-skills/
-│   │       └── SKILL.md        # Skill: browse/install skills from skills.sh
-│   └── (no service.json)       # Generated per machine
-├── README.md                   # This file
-└── .gitignore                  # (optional: ignore service.json, node_modules)
+│   │   ├── manage-mcps/        # Skill: browse/install MCP servers from mcpservers.org
+│   │   │   └── SKILL.md
+│   │   └── manage-skills/     # Skill: browse/install skills from skills.sh
+│   │       └── SKILL.md
+│   └── (no service.json)      # Generated per machine
+├── agents/                     # AI agent bootstrap instructions
+│   └── bootstrap-new-machine.md  # Self-contained agent checklist for new machines
+├── scripts/                   # Automation scripts
+│   └── bootstrap.sh            # Non-interactive setup script (skip interactive parts)
+├── README.md                  # This file
+└── .gitignore                  # Excludes service.json, node_modules, etc.
 ```
 
 ### Key Files Explained
