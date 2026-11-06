@@ -1,0 +1,118 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "plugin": [
+    "superpowers@git+https://github.com/obra/superpowers.git",
+    "@dietrichgebert/ponytail"
+  ],
+  "mcp": {
+    "github": {
+      "type": "local",
+      "command": ["npx", "-y", "@fre4x/github"],
+      "enabled": true,
+      "environment": {
+        "GITHUB_TOKEN": "{env:GITHUB_TOKEN}"
+      }
+    },
+    "playwright": {
+      "type": "local",
+      "command": ["npx", "-y", "@playwright/mcp@latest"],
+      "enabled": true,
+      "environment": {}
+    },
+    "fetch": {
+      "type": "local",
+      "command": ["npx", "-y", "mcp-fetch-server"],
+      "enabled": true,
+      "environment": {}
+    },
+    "filesystem": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-filesystem", "{env:HOME}"],
+      "enabled": true,
+      "environment": {}
+    },
+    "memory": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-memory"],
+      "enabled": true,
+      "environment": {}
+    },
+    "postgres": {
+      "type": "local",
+      "command": ["npx", "-y", "@modelcontextprotocol/server-postgres"],
+      "enabled": false,
+      "environment": {
+        "POSTGRES_CONNECTION_STRING": "{env:POSTGRES_URL}"
+      }
+    },
+    "mysql": {
+      "type": "local",
+      "command": ["npx", "-y", "@benborla29/mcp-server-mysql"],
+      "enabled": false,
+      "environment": {
+        "MYSQL_HOST": "{env:MYSQL_HOST}",
+        "MYSQL_PORT": "{env:MYSQL_PORT}",
+        "MYSQL_USER": "{env:MYSQL_USER}",
+        "MYSQL_PASSWORD": "{env:MYSQL_PASSWORD}",
+        "MYSQL_DATABASE": "{env:MYSQL_DATABASE}"
+      }
+    },
+    "docker": {
+      "type": "local",
+      "command": ["npx", "-y", "@hypnosis/docker-mcp-server"],
+      "enabled": true,
+      "environment": {}
+    },
+    "kubernetes": {
+      "type": "local",
+      "command": ["npx", "-y", "kubernetes-mcp-server"],
+      "enabled": false,
+      "environment": {}
+    }
+    // rea (Reverse Engineering Assistant) — set up manually per machine
+    //   Install rea, then add to opencode.jsonc:
+    //   "rea": {
+    //     "type": "local",
+    //     "command": ["npx", "-y", "@rea/rea"],
+    //     "enabled": true
+    //   }
+  },
+  "lsp": {
+    "typescript": {
+      "command": ["npx", "-y", "typescript-language-server", "--stdio"],
+      "extensions": [".ts", ".tsx", ".js", ".jsx", ".mjs", ".cjs", ".mts", ".cts"]
+    },
+    "json": {
+      "command": ["npx", "-y", "vscode-json-language-server", "--stdio"],
+      "extensions": [".json", ".jsonc", ".jsonl"]
+    },
+    "css": {
+      "command": ["npx", "-y", "vscode-css-language-server", "--stdio"],
+      "extensions": [".css", ".scss", ".less"]
+    },
+    "html": {
+      "command": ["npx", "-y", "vscode-html-language-server", "--stdio"],
+      "extensions": [".html", ".htm", ".vue", ".svelte"]
+    },
+    "tailwindcss": {
+      "command": ["npx", "-y", "tailwindcss-language-server", "--stdio"],
+      "extensions": [".css", ".scss", ".html", ".vue", ".svelte", ".jsx", ".tsx"]
+    },
+    "eslint": {
+      "command": ["npx", "-y", "vscode-eslint-language-server", "--stdio"],
+      "extensions": [".js", ".jsx", ".ts", ".tsx", ".mjs", ".cjs"]
+    },
+    "pyright": {
+      "command": ["npx", "-y", "pyright-langserver", "--stdio"],
+      "extensions": [".py"]
+    },
+    "gopls": {
+      "command": ["{env:HOME}/go/bin/gopls"],
+      "extensions": [".go"]
+    },
+    "rust-analyzer": {
+      "command": ["{env:HOME}/.cargo/bin/rust-analyzer"],
+      "extensions": [".rs"]
+    }
+  }
+}

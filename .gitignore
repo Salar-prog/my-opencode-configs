@@ -1,0 +1,15 @@
+# Never commit machine-specific files
+service.json
+node_modules/
+*.local.json
+
+# Never commit actual secrets - use env vars instead
+# opencode.jsonc should use {env:VAR} for all secrets
+
+# IDE/OS noise
+.DS_Store
+Thumbs.db
+
+# Backup files
+*.backup
+*.recovery
