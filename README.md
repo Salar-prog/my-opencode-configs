@@ -1,8 +1,59 @@
-# OpenCode Dotfiles — Complete Multi-Machine Replication
+# OpenCode Dotfiles
 
-This repository contains a portable, self-documenting OpenCode configuration that can be replicated across any number of machines (Linux, macOS, WSL) with minimal manual steps.
+[![Skills](https://img.shields.io/badge/skills-158-7C3AED)](./opencode/skills)
+[![MCP Servers](https://img.shields.io/badge/mcp_servers-10-0EA5E9)](./opencode/opencode.jsonc)
+[![LSPs](https://img.shields.io/badge/LSPs-9-10B981)](./opencode/opencode.jsonc)
+[![Linux](https://img.shields.io/badge/OS-Linux-4338CA)](https://www.linux.org/)
+[![macOS](https://img.shields.io/badge/OS-macOS-000000)](https://www.apple.com/macos/)
+[![WSL](https://img.shields.io/badge/WSL-2-003B00)](https://learn.microsoft.com/windows/wsl/)
+[![OpenCode](https://img.shields.io/badge/OpenCode-V2-1.18+-ff6b35)](https://opencode.ai/v2/docs/)
+[![License](https://img.shields.io/badge/license-MIT-green)](LICENSE)
+[![GitHub](https://img.shields.io/badge/GitHub-Salar--prog-important)](https://github.com/Salar-prog/my-opencode-configs)
 
-**Target audience:** You (the maintainer) + any collaborator who wants the exact same AI coding environment.
+> A portable, production-ready [OpenCode](https://opencode.ai) configuration that replicates an entire AI-assisted development environment across machines: **158 skills**, **10 MCP servers**, **9 language servers**, plugins, and TUI preferences — all with scripted bootstrap and agent-driven setup.
+
+## ✨ Features
+
+- ✅ **158 skills** — **superpowers** methodology, full **gamedev-skills pack** (77 skills + router), **hyperframes video suite**, `manage-mcps`/`manage-skills` marketplaces, plus the full `~/.agents/skills/` shared pool (74 skills).
+- ✅ **10 MCP servers** — GitHub (OAuth), Playwright, Fetch, Filesystem, Memory, Docker, Kubernetes (disabled), Postgres (disabled), MySQL (disabled), rea-ready.
+- ✅ **9 LSPs** — TypeScript, JSON, CSS, HTML, Tailwind, ESLint, Pyright, gopls, rust-analyzer — portable configs via `{env:HOME}`.
+- ✅ **One-prompt agent setup** — paste a prompt into any AI agent; it clones the repo and runs the full bootstrap.
+- ✅ **Scripted bootstrap** — `curl`-compatible `bootstrap.sh` for non-interactive setup with a full summary report.
+- ✅ **Secrets never committed** — OAuth tokens and service passwords are generated per machine; env-var interpolation (`{env:VAR}`) everywhere.
+- ✅ **Platform support** — Linux, macOS, and WSL2.
+
+## 🎯 What This Replicates
+
+| Layer | What's Included | Portability |
+|-------|-----------------|-------------|
+| **Global Server Config** (`opencode.jsonc`) | Plugins, MCP servers, LSPs, permissions | ✅ Fully portable (uses `{env:HOME}`) |
+| **CLI/TUI Preferences** (`cli.json`) | Theme, keybindings, diffs, animations | ✅ Fully portable |
+| **Skills** (`skills/`) | 158 skills — `manage-mcps`, `manage-skills`, hyperframes* suite, media-use, full gamedev-skills pack (77 + router), plus the entire `~/.agents/skills/` pool: 74 shared skills (superpowers, opencode, claude-code, awesome-design-skills, etc.) | ✅ Symlinked |
+| **Plugins** | `superpowers` (git), `@dietrichgebert/ponytail` | ✅ Auto-loaded from config |
+| **MCP Servers** | GitHub (OAuth), Playwright, Fetch, Filesystem, Memory, Docker, Kubernetes (disabled), Postgres (disabled), MySQL (disabled) | ✅ Config portable; OAuth re-auth per machine |
+| **LSPs** | TypeScript, JSON, CSS, HTML, Tailwind, ESLint, Pyright, gopls, rust-analyzer | ✅ Config portable; binaries installed per machine |
+
+### 🔷 Skills Breakdown
+
+| Category | Count | Highlights |
+|----------|-------|------------|
+| **gamedev-skills pack** | 78 | Godot ×13, Unity ×8, Unreal ×6, Roblox ×8, three.js ×3, Phaser ×2, Bevy, pygame, PixiJS, Defold, LÖVE, Ebitengine + genres + systems + workflows + router |
+| **hyperframes suite** | 4 | Video creation (hyperframes, hyperframes-cli, hyperframes-registry, media-use) |
+| **opencode built-ins** | 2 | manage-mcps (MCP marketplace), manage-skills (skills marketplace) |
+| **`~/.agents/skills` pool** | 74 | superpowers methodology, debugging, code review, document formats (docx/pdf/pptx/xlsx), mcp-builder, webapp-testing, skill-creator, awesome-design-skills, brand-guidelines, etc. |
+| **Total** | **158** | |
+
+### ⚠️ What's NOT Replicated (Intentional)
+
+| Item | Why | How to Handle |
+|------|-----|---------------|
+| `service.json` | Contains machine-specific service auth token | **Generated fresh per machine** (recommended) |
+| `~/.local/share/opencode/` | Sessions, logs, DB, tool output — per-machine state | Never replicate |
+| `node_modules/` | `npx` fetches on demand | Not needed |
+| **rea MCP** | Requires manual binary install + setup | Documented in [rea Setup](#-rea-manual-setup-per-machine) |
+| OAuth tokens (GitHub) | Per-account, per-machine | Sign in via `/mcps` on each machine |
+| Symlinks in `~/.config/opencode/skills/` pointing to `~/.claude/skills/` | Local-only cluster links; dereferenced to real files when copied | Replicated as real files (hyperframes* suite, media-use: originally symlinked, now real copies in repo) |
+| Project-level `.opencode/` configs | Project-specific, live in project repos | Not in this repo |
 
 ---
 
@@ -60,6 +111,21 @@ opencode
 ```
 
 **Total time:** ~3 minutes (plus OAuth flow).
+
+---
+
+## 📦 Requirements
+
+| Tool | Minimum Version | Required? | Notes |
+|------|----------------|-----------|-------|
+| Node.js | 22.20+ | ✅ Required | via nvm recommended; LSPs/MCPs fetch via npx |
+| Git | any recent | ✅ Required | for cloning and plugin loading |
+| OpenCode CLI | V2 (1.18+) | ✅ Required | `npm install -g @opencode-ai/opencode` |
+| Go | any recent | Optional | for gopls LSP |
+| Rust + rustup | any recent | Optional | for rust-analyzer LSP |
+| Python 3 | 3.10+ | Optional | for pyright LSP |
+| Docker daemon | any recent | Optional | for docker MCP + container work |
+| Docker Desktop | any recent | Mac/Win only | for Docker MCP on macOS/Windows |
 
 ---
 
@@ -492,6 +558,7 @@ dotfiles/
 | `skills/manage-skills/` | Skill for discovering/installing skills from skills.sh. |
 | `skills/hyperframes*/` + `media-use/` | Video creation suite (deref'd from `~/.claude/skills/`). |
 | `skills/router/` + `skills/godot-*/` etc. | Full [gamedev-skills pack](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (77 skills + router) — engine, genre, and cross-engine skills. OpenCode auto-loads them by description. |
+| `skills/<name>/` (74 more) | The `~/.agents/skills/` cross-agent pool — superpowers, opencode, claude, awesome-design-skills, etc. Also available to other agents via symlink. |
 | `agents/bootstrap-new-machine.md` | Agent-executable bootstrap checklist. |
 | `scripts/bootstrap.sh` | Non-interactive automation (clone, symlink, service, LSPs) — exits with summary of what worked/failed and what's left manual. |
 
@@ -676,6 +743,60 @@ After setup, verify each item:
 - [ ] File operations work: "List files in ~/"
 - [ ] GitHub operations work: "Show my repos"
 - [ ] Theme/keybindings from `cli.json` applied
+
+---
+
+## 🔄 Updating Upstream Skills (Maintenance)
+
+The gamedev-skills pack is vendored as a snapshot. To pull upstream updates:
+
+```bash
+# 1. Update from upstream
+tmp=$(mktemp -d)
+git clone --depth 1 https://github.com/gamedev-skills/awesome-gamedev-agent-skills "$tmp/repo"
+cp -R "$tmp/repo/router" ~/dotfiles/opencode/skills/router
+for d in "$tmp/repo"/skills/*/*/; do cp -R "$d" ~/dotfiles/opencode/skills/$(basename "$d"); done
+rm -rf "$tmp"
+
+# 2. Review changes
+cd ~/dotfiles && git status
+
+# 3. Commit
+git add -A && git commit -m "Update gamedev-skills pack from upstream" && git push
+```
+
+Or use the `skills` CLI for the global install (requires Node 22.20+):
+```bash
+npx skills add gamedev-skills/awesome-gamedev-agent-skills -g --copy
+```
+
+---
+
+## 🤝 Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md). Fork, make changes to config/skills, and open a PR. All config changes follow the same rule: anything in `~/.config/opencode/` is symlinked to `~/dotfiles/opencode/` on every machine, so edits sync everywhere automatically.
+
+---
+
+## 📬 Support & Community
+
+- 🐛 **Bug reports & feature requests** — [GitHub Issues](https://github.com/Salar-prog/my-opencode-configs/issues)
+- 💬 **Questions** — also via Issues; tag with `question`
+- ⭐ **Found this useful?** — give it a star and share it with a friend
+
+---
+
+## 📝 License / Attribution
+
+See [LICENSE](LICENSE). This configuration is tailored for personal/team use. Upstream components retain their original licenses:
+
+- OpenCode — Apache-2.0
+- [superpowers](https://github.com/obra/superpowers) — MIT
+- [ponytail](https://github.com/dietrichgebert/ponytail) — MIT
+- [gamedev-skills](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) — MIT
+- MCP servers — check each package
+
+Feel free to fork, adapt, and share.
 
 ---
 
