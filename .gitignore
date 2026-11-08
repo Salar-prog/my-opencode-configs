@@ -10,6 +10,10 @@ node_modules/
 .DS_Store
 Thumbs.db
 
+# NOTE: opencode/skills/ is intentionally committed — 84 skills (manage-mcps,
+# manage-skills, hyperframes* suite, media-use, and the gamedev-skills pack).
+# Everything under opencode/skills/ replicates to new machines via the symlink.
+
 # Backup files
 *.backup
 *.recovery

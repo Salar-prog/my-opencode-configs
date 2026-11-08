@@ -189,7 +189,11 @@ echo ""
 #######################################################################
 echo "📂 Verifying skills are bundled..."
 SKILLS_DIR="$OPCODE_CONFIG/skills"
-for skill in manage-mcps manage-skills; do
+SKILL_COUNT=$(ls "$SKILLS_DIR" 2>/dev/null | wc -l)
+echo "  ℹ️  Found $SKILL_COUNT skill directories in $SKILLS_DIR/"
+echo "      Expected: 158 (manage-mcps, manage-skills, hyperframes* suite, media-use,"
+echo "      gamedev-skills pack — 77 skills + router, and the full ~/.agents pool — 74 skills)."
+for skill in manage-mcps manage-skills router godot-2d-movement unity-input-system threejs-scene-setup roblox-luau brainstorming systematic-debugging using-superpowers mcp-builder; do
   if [ -d "$SKILLS_DIR/$skill" ]; then
     step_ok "$skill/ skill present"
   else

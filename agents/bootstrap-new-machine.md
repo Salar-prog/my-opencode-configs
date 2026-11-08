@@ -71,8 +71,13 @@ cat ~/.config/opencode/service.json   # Fresh password generated
 
 ```bash
 ls ~/.config/opencode/skills/
-# Should show: manage-mcps/ manage-skills/
+# Should show 158 skills: manage-mcps/, manage-skills/, hyperframes*, media-use/,
+# router/, the full gamedev-skills pack (godot-*, unity-*, unreal-*, roblox-*,
+# threejs-*, phaser-*, etc.), and the full ~/.agents/skills pool (superpowers,
+# brainstorming, systematic-debugging, code-review, etc.)
 ```
+
+> NOTE: `~/.agents/skills/` content is included in the dotfiles. OpenCode loads from `~/.config/opencode/skills/`. If you also use other agents (Claude Code, Cursor), they can read from `~/.agents/skills/` directly — an optional manual symlink (`ln -s ~/.config/opencode/skills ~/.agents/skills`) makes them share the same pool.
 
 ---
 
@@ -124,7 +129,7 @@ Run in OpenCode TUI or via API:
 [ ] /mcps → memory Connected
 [ ] /mcps → docker Connected
 [ ] kubernetes, postgres, mysql → Disabled (expected)
-[ ] skills: manage-mcps, manage-skills loaded
+[ ] skills: all 158 loaded (manage-mcps, manage-skills, hyperframes*, media-use, router, gamedev pack, agents pool)
 [ ] LSPs connected: typescript, json, css, html, tailwind, eslint, pyright
 [ ] LSPs connected: gopls (if installed), rust-analyzer (if installed)
 [ ] Filesystem test: "List files in ~/" → works

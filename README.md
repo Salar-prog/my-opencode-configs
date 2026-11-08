@@ -12,7 +12,7 @@ This repository contains a portable, self-documenting OpenCode configuration tha
 |-------|-----------------|-------------|
 | **Global Server Config** (`opencode.jsonc`) | Plugins, MCP servers, LSPs, permissions | ✅ Fully portable (uses `{env:HOME}`) |
 | **CLI/TUI Preferences** (`cli.json`) | Theme, keybindings, diffs, animations | ✅ Fully portable |
-| **Skills** (`skills/`) | `manage-mcps`, `manage-skills` | ✅ Symlinked |
+| **Skills** (`skills/`) | 158 skills — `manage-mcps`, `manage-skills`, hyperframes* suite, media-use, full gamedev-skills pack (77 + router), plus the entire `~/.agents/skills/` pool: 74 shared skills (superpowers, opencode, claude-code, awesome-design-skills, etc.) | ✅ Symlinked |
 | **Plugins** | `superpowers` (git), `@dietrichgebert/ponytail` | ✅ Auto-loaded from config |
 | **MCP Servers** | GitHub (OAuth), Playwright, Fetch, Filesystem, Memory, Docker, Kubernetes (disabled), Postgres (disabled), MySQL (disabled) | ✅ Config portable; OAuth re-auth per machine |
 | **LSPs** | TypeScript, JSON, CSS, HTML, Tailwind, ESLint, Pyright, gopls, rust-analyzer | ✅ Config portable; binaries installed per machine |
@@ -26,6 +26,7 @@ This repository contains a portable, self-documenting OpenCode configuration tha
 | `node_modules/` | `npx` fetches on demand | Not needed |
 | **rea MCP** | Requires manual binary install + setup | Documented in [rea Setup](#-rea-manual-setup-per-machine) |
 | OAuth tokens (GitHub) | Per-account, per-machine | Sign in via `/mcps` on each machine |
+| Symlinks in `~/.config/opencode/skills/` pointing to `~/.claude/skills/` | Local-only cluster links; dereferenced to real files when copied | Replicated as real files (hyperframes* suite, media-use: originally symlinked, now real copies in repo) |
 | Project-level `.opencode/` configs | Project-specific, live in project repos | Not in this repo |
 
 ---
@@ -225,7 +226,7 @@ In the OpenCode TUI:
 
 # Check skills are loaded
 > What skills do I have?
-# Should mention: manage-mcps, manage-skills
+# Should mention: manage-mcps, manage-skills, plus game dev skills (router, godot-2d-movement, unity-input-system, etc.)
 ```
 
 ---
@@ -441,18 +442,44 @@ dotfiles/
 ├── opencode/
 │   ├── opencode.jsonc          # Global server config (main file)
 │   ├── cli.json                # CLI/TUI preferences
-│   ├── skills/
-│   │   ├── manage-mcps/        # Skill: browse/install MCP servers from mcpservers.org
-│   │   │   └── SKILL.md
-│   │   └── manage-skills/     # Skill: browse/install skills from skills.sh
-│   │       └── SKILL.md
-│   └── (no service.json)      # Generated per machine
-├── agents/                     # AI agent bootstrap instructions
+│   ├── skills/                  # 158 skills — auto-loaded globally by OpenCode
+│   │   ├── manage-mcps/, manage-skills/   # MCP and skills marketplace managers
+│   │   ├── hyperframes*, media-use/       # Video creation suite (deref'd from ~/.claude)
+│   │   │
+│   │   │  ── GAMDEV PACK (78 skills) ──
+│   │   ├── router/              # Gamedev dispatcher
+│   │   ├── godot-*/ (13), unity-*/ (8), unreal-*/ (6), roblox-*/ (8)
+│   │   ├── threejs-*/ (3), phaser-*/ (2), bevy-ecs/, pygame-core/,
+│   │   │   pixijs-rendering/, defold-core/, love2d-core/, ebitengine-game/
+│   │   ├── genre templates: platformer/, roguelike/, rpg/, fps-shooter/,
+│   │   │   card-game/, puzzle/, tower-defense/, survival-crafting/, visual-novel/
+│   │   ├── systems: game-ai/, game-feel/, game-ui-ux/, camera-systems/,
+│   │   │   procedural-gen/, audio-design/, physics-tuning/, save-systems/, etc.
+│   │   └── workflows: prototype-fast/, game-jam/, steam-publish/, itch-publish/
+│   │   │
+│   │   │  ── ~/.agents/skills POOL (74 skills) ──
+│   │   │   Shared cross-agent library, now also replicated for OpenCode.
+│   │   ├── superpowers ecosystem: using-superpowers/, brainstorming/,
+│   │   │   systematic-debugging/, test-driven-development/, tdd/,
+│   │   │   executing-plans/, subagent-driven-development/, etc.
+│   │   ├── engineering: code-review/, requesting-code-review/, receiving-code-review/,
+│   │   │   diagnosing-bugs/, codebase-design/, domain-modeling/, writing-plans/,
+│   │   │   verification-before-completion/, etc.
+│   │   ├── document formats: docx/, pdf/, pptx/, xlsx/, internal-comms/,
+│   │   │   doc-coauthoring/, research/, retro/, teach/
+│   │   ├── platform/infra: mcp-builder/, webapp-testing/, web-artifacts-builder/
+│   │   ├── meta: skill-creator/, writing-skills/, writing-for-agents/,
+│   │   │   academy-guide/, ask-matt/, claude-api/, claude-handoff/
+│   │   └── design/creative: awesome-design-skills/, canvas-design/,
+│   │       brand-guidelines/, theme-factory/, frontend-design/,
+│   │       slack-gif-creator/, algorithmic-art/
+│   └── (no service.json)       # Generated per machine
+├── agents/                      # AI agent bootstrap instructions
 │   └── bootstrap-new-machine.md  # Self-contained agent checklist for new machines
-├── scripts/                   # Automation scripts
-│   └── bootstrap.sh            # Non-interactive setup script (skip interactive parts)
-├── README.md                  # This file
-└── .gitignore                  # Excludes service.json, node_modules, etc.
+├── scripts/                     # Automation scripts
+│   └── bootstrap.sh             # Non-interactive setup script (skip interactive parts)
+├── README.md                    # This file
+└── .gitignore                   # Excludes service.json, node_modules, etc.
 ```
 
 ### Key Files Explained
@@ -463,6 +490,10 @@ dotfiles/
 | `cli.json` | Terminal UI preferences: theme, diffs, tabs, animations, keybindings. |
 | `skills/manage-mcps/` | Skill for discovering/adding MCP servers from mcpservers.org. |
 | `skills/manage-skills/` | Skill for discovering/installing skills from skills.sh. |
+| `skills/hyperframes*/` + `media-use/` | Video creation suite (deref'd from `~/.claude/skills/`). |
+| `skills/router/` + `skills/godot-*/` etc. | Full [gamedev-skills pack](https://github.com/gamedev-skills/awesome-gamedev-agent-skills) (77 skills + router) — engine, genre, and cross-engine skills. OpenCode auto-loads them by description. |
+| `agents/bootstrap-new-machine.md` | Agent-executable bootstrap checklist. |
+| `scripts/bootstrap.sh` | Non-interactive automation (clone, symlink, service, LSPs) — exits with summary of what worked/failed and what's left manual. |
 
 ---
 
@@ -611,6 +642,8 @@ If you want to use this exact setup:
 - **skills.sh:** https://skills.sh
 - **superpowers:** https://github.com/obra/superpowers
 - **ponytail:** https://github.com/dietrichgebert/ponytail
+- **gamedev-skills pack:** https://github.com/gamedev-skills/awesome-gamedev-agent-skills
+- **Agent Skills spec:** https://agentskills.io/specification
 
 ---
 
@@ -635,7 +668,9 @@ After setup, verify each item:
 - [ ] `/mcps` → github shows **Connected** (after OAuth)
 - [ ] `/mcps` → playwright, fetch, filesystem, memory, docker show **Connected**
 - [ ] `/mcps` → kubernetes, postgres, mysql show **Disabled** (unless enabled)
-- [ ] Skills loaded: "manage-mcps", "manage-skills" available
+- [ ] `ls ~/.config/opencode/skills/` → 158 skills (manage-mcps, manage-skills, hyperframes* suite, media-use, gamedev router + 77, ~/.agents pool 74)
+- [ ] `ls ~/.config/opencode/skills/ | wc -l` → 158
+- [ ] `/mcps` → all 158 skills loaded (visible via `/skills` command)
 - [ ] LSPs: TypeScript, JSON, CSS, HTML, Tailwind, ESLint, Pyright show **Connected**
 - [ ] LSPs: gopls, rust-analyzer show **Connected** (if Go/Rust installed)
 - [ ] File operations work: "List files in ~/"
